@@ -39,7 +39,7 @@ class RegisterInputSerializer(serializers.Serializer):
 class RegisterOutputSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ('username', 'email', 'created_at', 'updated_at')
+        fields = ('username', 'email', 'first_name', 'last_name')
 
 
 
