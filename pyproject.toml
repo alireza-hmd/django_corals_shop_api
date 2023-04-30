@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "django_cosmethic_api"
+version = "0.1.0"
+description = ""
+authors = ["Alireza Hamedi <alireza12196@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+django = "^4.2"
+djangorestframework = "^3.14.0"
+psycopg2-binary = "^2.9.6"
+django-environ = "^0.10.0"
+drf-spectacular = "^0.26.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

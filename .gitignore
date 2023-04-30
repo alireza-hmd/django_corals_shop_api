@@ -1,0 +1,12 @@
+.idea/*
+.idea
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+media
+.venv
+.env
+.DS_Store
+db.sqlite3
