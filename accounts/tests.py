@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APIClient, APITestCase, APIRequestFactory
+from rest_framework import status
+from . import views
 
 
 class CustomUserTest(APITestCase):
@@ -32,3 +34,4 @@ class CustomUserTest(APITestCase):
         response = self.client.post('/accounts/auth/login/', data={'username': 'test', 'password': 'test123'})
         self.assertIn('access', response.content.decode())
         self.assertIn('refresh', response.content.decode())
+
