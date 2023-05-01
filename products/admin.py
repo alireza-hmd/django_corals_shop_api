@@ -7,8 +7,8 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('title', 'category', 'brand', 'price', 'available', 'created_at')
-    list_filter = ('category', 'available', 'created_at')
+    list_display = ('vendor', 'title', 'category', 'brand', 'price', 'available', 'created_at')
+    list_filter = ('vendor', 'category', 'available', 'created_at')
     list_editable = ('price', 'available')
 
 

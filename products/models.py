@@ -23,6 +23,7 @@ class Brand(models.Model):
 
 
 class Product(models.Model):
+    vendor = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='vendor_products')
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='category_products', null=True)
