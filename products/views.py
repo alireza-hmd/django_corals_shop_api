@@ -64,3 +64,40 @@ class CategoryListView(APIView):
         categories = Category.objects.all()
         serializer = serializers.CategoryListSerializer(instance=categories, many=True)
         return Response(serializer.data)
+
+
+class ImageUploadView(APIView):
+    @extend_schema(request=serializers.ImageUploadSerializer, responses=serializers.ImageListSerializer)
+    def post(self, request, product_slug):
+        serializer = serializers.ImageUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        product = get_object_or_404(Product, slug=product_slug)
+        image = Image.objects.create(image=serializer.validated_data['image'], product=product)
+        context = {'request': request}
+        return Response(serializers.ImageListSerializer(instance=image, context=context).data,
+                        status=status.HTTP_201_CREATED)
+
+
+class ImageListView(APIView):
+    @extend_schema(responses=serializers.ImageListSerializer)
+    def get(self, request, product_slug):
+        product = get_object_or_404(Product, slug=product_slug)
+        images = Image.objects.filter(product=product)
+        serializer = serializers.ImageListSerializer(instance=images, many=True)
+        return Response(serializer.data)
+
+
+class ImageDetailView(APIView):
+    @extend_schema(responses=serializers.ImageListSerializer)
+    def get(self, request, product_slug, image_id):
+        product = get_object_or_404(Product, slug=product_slug)
+        image = get_object_or_404(Image, product=product, id=image_id)
+        serializer = serializers.ImageListSerializer(instance=image)
+        return Response(serializer.data)
+
+    def delete(self, request, product_slug, image_id):
+        product = get_object_or_404(Product, slug=product_slug)
+        image = get_object_or_404(Image, product=product, id=image_id)
+        image.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
