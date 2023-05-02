@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.text import slugify
 from drf_spectacular.utils import extend_schema
 from . import serializers
-from . models import Product, Image, Brand, Category
+from . models import Product, Image, Brand, Category, Comment
 
 
 class VendorsProductCreateView(APIView):
@@ -111,4 +111,33 @@ class ProductDetailView(APIView):
         serializer = serializers.ProductDetailSerializer(instance=product)
         return Response(serializer.data)
 
+
+class CommentCreateView(APIView):
+    @extend_schema(request=serializers.CommentCreateSerializer, responses=serializers.CommentListSerializer)
+    def post(self, request, product_slug):
+        product = get_object_or_404(Product, slug=product_slug)
+        serializer = serializers.CommentCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        comment = Comment.objects.create(product=product, author=request.user, body=data['body'])
+        context = {'request': request}
+        return Response(serializers.CommentListSerializer(instance=comment, context=context).data,
+                        status=status.HTTP_201_CREATED)
+
+
+class CommentListView(APIView):
+    @extend_schema(responses=serializers.CommentListSerializer)
+    def get(self, request, product_slug):
+        product = get_object_or_404(Product, slug=product_slug)
+        comments = Comment.objects.filter(product=product)
+        serializer = serializers.CommentListSerializer(instance=comments, many=True)
+        return Response(serializer.data)
+
+
+class CommentDeleteView(APIView):
+    def delete(self, request, product_slug, comment_id):
+        product = get_object_or_404(Product, slug=product_slug)
+        comment = get_object_or_404(Comment, product=product, author=request.user)
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 

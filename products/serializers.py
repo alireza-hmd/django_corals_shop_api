@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.core.validators import FileExtensionValidator
 from django.urls import reverse
-from .models import Product, Brand, Category, Image
+from .models import Product, Brand, Category, Image, Comment
 
 
 class ProductCreateSerializer(serializers.ModelSerializer):
@@ -56,3 +56,13 @@ class ProductListSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         path = reverse('products:customer_detail', args=(product.slug,))
         return request.build_absolute_uri(path)
+
+
+class CommentCreateSerializer(serializers.Serializer):
+    body = serializers.CharField()
+
+
+class CommentListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = '__all__'
