@@ -8,7 +8,7 @@ from . import serializers
 from . models import Product, Image, Brand, Category
 
 
-class ProductCreateView(APIView):
+class VendorsProductCreateView(APIView):
     @extend_schema(request=serializers.ProductCreateSerializer, responses=serializers.ProductDetailSerializer)
     def post(self, request):
         serializer = serializers.ProductCreateSerializer(data=request.data)
@@ -16,33 +16,38 @@ class ProductCreateView(APIView):
         data = serializer.validated_data
         product = Product.objects.create(
             vendor=request.user,
-            title=data['title'],
             slug=slugify(data['title']),
-            category=data['category'],
-            brand=data['brand'],
-            price=data['price'],
-            volume=data['volume'],
-            description=data['description'],
+            **data,
         )
         context = {'request': request}
-        return Response(serializers.ProductDetailSerializer(instance=product, context=context).data,
+        return Response(serializers.ProductListSerializer(instance=product, context=context).data,
                         status=status.HTTP_201_CREATED)
 
 
-class ProductListView(APIView):
-    @extend_schema(responses=serializers.ProductListSerializer)
+class VendorsProductListView(APIView):
+    @extend_schema(responses=serializers.VendorProductListSerializer)
     def get(self, request):
         products = Product.objects.filter(vendor=request.user)
-        serializer = serializers.ProductListSerializer(instance=products, many=True)
+        context = {'request': request}
+        serializer = serializers.VendorProductListSerializer(instance=products, context=context, many=True)
         return Response(serializer.data)
 
 
-class ProductDetailView(APIView):
+class VendorsProductDetailView(APIView):
     @extend_schema(responses=serializers.ProductDetailSerializer)
     def get(self, request, product_slug):
         product = get_object_or_404(Product, vendor=request.user, slug=product_slug)
         serializer = serializers.ProductDetailSerializer(instance=product)
         return Response(serializer.data)
+
+    @extend_schema(request=serializers.ProductCreateSerializer, responses=serializers.ProductListSerializer)
+    def put(self, request, product_slug):
+        product = get_object_or_404(Product, vendor=request.user, slug=product_slug)
+        serializer = serializers.ProductCreateSerializer(instance=product, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        context = {'request': request}
+        return Response(serializers.ProductListSerializer(instance=product, context=context).data)
 
     def delete(self, request, product_slug):
         product = get_object_or_404(Product, vendor=request.user, slug=product_slug)
@@ -50,23 +55,7 @@ class ProductDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class BrandListView(APIView):
-    @extend_schema(responses=serializers.BrandListSerializer)
-    def get(self, request):
-        brands = Brand.objects.all()
-        serializer = serializers.BrandListSerializer(instance=brands, many=True)
-        return Response(serializer.data)
-
-
-class CategoryListView(APIView):
-    @extend_schema(responses=serializers.CategoryListSerializer)
-    def get(self, request):
-        categories = Category.objects.all()
-        serializer = serializers.CategoryListSerializer(instance=categories, many=True)
-        return Response(serializer.data)
-
-
-class ImageUploadView(APIView):
+class VendorsImageUploadView(APIView):
     @extend_schema(request=serializers.ImageUploadSerializer, responses=serializers.ImageListSerializer)
     def post(self, request, product_slug):
         serializer = serializers.ImageUploadSerializer(data=request.data)
@@ -78,7 +67,7 @@ class ImageUploadView(APIView):
                         status=status.HTTP_201_CREATED)
 
 
-class ImageListView(APIView):
+class VendorsImageListView(APIView):
     @extend_schema(responses=serializers.ImageListSerializer)
     def get(self, request, product_slug):
         product = get_object_or_404(Product, slug=product_slug)
@@ -87,7 +76,7 @@ class ImageListView(APIView):
         return Response(serializer.data)
 
 
-class ImageDetailView(APIView):
+class VendorsImageDetailView(APIView):
     @extend_schema(responses=serializers.ImageListSerializer)
     def get(self, request, product_slug, image_id):
         product = get_object_or_404(Product, slug=product_slug)
@@ -100,4 +89,26 @@ class ImageDetailView(APIView):
         image = get_object_or_404(Image, product=product, id=image_id)
         image.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ProductListView(APIView):
+    @extend_schema(responses=serializers.ProductListSerializer)
+    def get(self, request, category_slug=None):
+        if category_slug:
+            category = get_object_or_404(Category, slug=category_slug)
+            products = Product.objects.filter(category=category)
+        else:
+            products = Product.objects.all()
+        context = {'request': request}
+        serializer = serializers.ProductListSerializer(instance=products, context=context, many=True)
+        return Response(serializer.data)
+
+
+class ProductDetailView(APIView):
+    @extend_schema(responses=serializers.ProductDetailSerializer)
+    def get(self, request, product_slug):
+        product = get_object_or_404(Product, slug=product_slug)
+        serializer = serializers.ProductDetailSerializer(instance=product)
+        return Response(serializer.data)
+
 

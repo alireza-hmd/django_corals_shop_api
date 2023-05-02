@@ -4,14 +4,20 @@ from . import views
 app_name = 'products'
 
 urlpatterns = [
-    path('create/', views.ProductCreateView.as_view(), name='create'),
-    path('brands/', views.BrandListView.as_view(), name='brands'),
-    path('categories/', views.CategoryListView.as_view(), name='categories'),
-    path('product/', include([
-        path('<slug:product_slug>/', views.ProductDetailView.as_view(), name='detail'),
-        path('<slug:product_slug>/image_uplaod/', views.ImageUploadView.as_view(), name='image_upload'),
-        path('<slug:product_slug>/image_list/', views.ImageListView.as_view(), name='image_list'),
-        path('<slug:product_slug>/<int:image_id>/', views.ImageDetailView.as_view(), name='image_detail'),
+    # Vendor URLs
+    path('vendors/products/', include([
+        path('create/', views.VendorsProductCreateView.as_view(), name='vendor_create'),
+        path('<slug:product_slug>/', views.VendorsProductDetailView.as_view(), name='vendor_detail'),
+        path('<slug:product_slug>/image_uplaod/', views.VendorsImageUploadView.as_view(), name='vendor_image_upload'),
+        path('<slug:product_slug>/image_list/', views.VendorsImageListView.as_view(), name='vendor_image_list'),
+        path('<slug:product_slug>/<int:image_id>/', views.VendorsImageDetailView.as_view(), name='vendor_image_detail'),
+        path('', views.VendorsProductListView.as_view(), name='vendor_list'),
     ])),
-    path('', views.ProductListView.as_view(), name='list'),
+
+    # Customer URLs
+    path('products/', include([
+        path('<slug:category_slug>/', views.ProductListView.as_view(), name='customer_category_list'),
+        path('product/<slug:product_slug>/', views.ProductDetailView.as_view(), name='customer_detail'),
+        path('', views.ProductListView.as_view(), name='customer_list'),
+    ])),
 ]

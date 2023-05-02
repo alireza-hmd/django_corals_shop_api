@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.core.validators import FileExtensionValidator
+from django.urls import reverse
 from .models import Product, Brand, Category, Image
 
 
@@ -9,10 +10,16 @@ class ProductCreateSerializer(serializers.ModelSerializer):
         fields = ('title', 'category', 'brand', 'price', 'volume', 'description')
 
 
-class ProductListSerializer(serializers.ModelSerializer):
+class VendorProductListSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField('get_url')
     class Meta:
         model = Product
-        fields = ('vendor', 'title', 'brand', 'price', 'available')
+        fields = ('vendor', 'title', 'brand', 'price', 'available', 'url')
+
+    def get_url(self, product):
+        request = self.context.get('request')
+        path = reverse('products:vendor_detail', args=(product.slug,))
+        return request.build_absolute_uri(path)
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):
@@ -26,8 +33,10 @@ class ImageUploadSerializer(serializers.Serializer):
         validators=[FileExtensionValidator(['jpeg', 'jpg', 'png'])]
     )
 
+
 class ImageListSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField('get_image_url')
+
     class Meta:
         model = Image
         fields = ('id', 'product', 'image_url')
@@ -36,14 +45,14 @@ class ImageListSerializer(serializers.ModelSerializer):
         return image.image.url
 
 
-class BrandListSerializer(serializers.ModelSerializer):
+class ProductListSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField('get_url')
+
     class Meta:
-        model = Brand
-        fields = '__all__'
+        model = Product
+        fields = ('vendor', 'title', 'brand', 'price', 'available', 'url')
 
-
-class CategoryListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = '__all__'
-
+    def get_url(self, product):
+        request = self.context.get('request')
+        path = reverse('products:customer_detail', args=(product.slug,))
+        return request.build_absolute_uri(path)
