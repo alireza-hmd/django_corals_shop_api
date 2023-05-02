@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.core.validators import FileExtensionValidator
-from .models import Product
+from .models import Product, Brand, Category
 
 
 class ProductCreateSerializer(serializers.ModelSerializer):
@@ -33,3 +33,13 @@ class ImageListSerializer(serializers.Serializer):
     product_slug = serializers.SlugField()
 
 
+class BrandListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Brand
+        fields = '__all__'
+
+
+class CategoryListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'

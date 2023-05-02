@@ -4,6 +4,7 @@ from .models import Product, Brand, Category, Image, Comment
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('title', 'slug')
+    prepopulated_fields = {'slug': ('title',)}
 
 
 class ProductAdmin(admin.ModelAdmin):
@@ -14,6 +15,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 class BrandAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug', 'country')
+    prepopulated_fields = {'slug': ('name',)}
 
 
 class ImageAdmin(admin.ModelAdmin):
