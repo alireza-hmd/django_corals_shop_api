@@ -23,9 +23,11 @@ class VendorProductListSerializer(serializers.ModelSerializer):
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Product
-        fields = '__all__'
+        fields = ('id', 'title', 'slug', 'price', 'volume', 'description', 'available',
+                  'created_at', 'updated_at', 'vendor', 'category', 'brand', 'product_images', 'product_comments')
 
 
 class ImageUploadSerializer(serializers.Serializer):
