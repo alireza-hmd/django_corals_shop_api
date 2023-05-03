@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # Third Party
     'rest_framework',
     'drf_spectacular',
+    'django_rest_passwordreset',
 
 ]
 
@@ -137,3 +138,6 @@ SIMPLE_JWT = {
 
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
