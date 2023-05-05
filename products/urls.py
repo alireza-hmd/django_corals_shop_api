@@ -26,4 +26,7 @@ urlpatterns = [
         path('', views.ProductListView.as_view(), name='customer_list'),
 
     ])),
+
+    # Search URL
+    path('search/', views.SearchView().as_view(), name='search')
 ]

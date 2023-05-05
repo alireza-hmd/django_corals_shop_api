@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('auth/register/', views.RegisterView.as_view(), name='register'),
     path('auth/forgot_password/', include('django_rest_passwordreset.urls', namespace='password_reset')),
+
     # jwt authentication
     path('auth/', include([
         path('login/', TokenObtainPairView.as_view(), name='login'),

@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from django.shortcuts import get_object_or_404
 from django.utils.text import slugify
 from drf_spectacular.utils import extend_schema
@@ -141,3 +142,16 @@ class CommentDeleteView(APIView):
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+class SearchView(APIView):
+    @extend_schema(responses=serializers.ProductListSerializer)
+    def get(self, request):
+        query = request.GET.get('q')
+        search_vector = SearchVector('title', 'category__title', 'brand__name', 'description')
+        search_query = SearchQuery(query)
+        results = Product.objects.annotate(
+            search=search_vector, rank=SearchRank(search_vector, search_query)
+        ).filter(search=search_query).order_by('-rank')
+        context = {'request': request}
+        serializer = serializers.ProductListSerializer(instance=results, context=context, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
