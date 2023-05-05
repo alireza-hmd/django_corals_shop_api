@@ -100,6 +100,12 @@ class ProductListView(APIView):
             products = Product.objects.filter(category=category)
         else:
             products = Product.objects.all()
+        if request.GET.get('available') == '1':
+            products = products.filter(available=True)
+        if request.GET.get('brands'):
+            brands = request.GET.get('brands')
+            brands = brands.split(',')
+            products = products.filter(brand__name__in=brands)
         context = {'request': request}
         serializer = serializers.ProductListSerializer(instance=products, context=context, many=True)
         return Response(serializer.data)
