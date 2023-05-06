@@ -31,7 +31,14 @@ class Cart:
             del self.cart[product_id]
         self.save()
 
-    def __iter__(self):
+    def get_item(self, product):
+        product_id = str(product.id)
+        if product_id in self.cart:
+            self.cart[product_id]['product'] = str(product)
+            self.cart[product_id]['total_price'] = str(Decimal(self.cart[product_id]['price']) * self.cart[product_id]['quantity'])
+        return self.cart[product_id]
+
+    def get_items(self):
         product_ids = self.cart.keys()
 
         products = Product.objects.filter(id__in=product_ids)

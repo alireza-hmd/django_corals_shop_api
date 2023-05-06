@@ -17,14 +17,14 @@ class CartAddView(APIView):
         cart = Cart(request)
         product = get_object_or_404(Product, slug=product_slug)
         cart.add(product, quantity=data['quantity'], override_quantity=data['override_quantity'])
-        return Response(serializers.CartListSerializer(instance=cart.__iter__()[0]).data)
+        return Response(serializers.CartListSerializer(instance=cart.get_item(product)).data)
 
 
 class CartListView(APIView):
     @extend_schema(responses=serializers.CartListSerializer)
     def get(self, request):
         cart = Cart(request)
-        return Response(serializers.CartListSerializer(instance=cart.__iter__(), many=True).data)
+        return Response(serializers.CartListSerializer(instance=cart.get_items(), many=True).data)
 
 
 class CartRemoveView(APIView):
