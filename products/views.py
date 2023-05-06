@@ -5,8 +5,12 @@ from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from django.shortcuts import get_object_or_404
 from django.utils.text import slugify
 from drf_spectacular.utils import extend_schema
+from django.conf import settings
+import redis
 from . import serializers
 from . models import Product, Image, Brand, Category, Comment
+
+r = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB)
 
 
 class VendorsProductCreateView(APIView):
@@ -115,6 +119,7 @@ class ProductDetailView(APIView):
     @extend_schema(responses=serializers.ProductDetailSerializer)
     def get(self, request, product_slug):
         product = get_object_or_404(Product, slug=product_slug)
+        total_views = r.incr(f'product:{product.id}:views')
         serializer = serializers.ProductDetailSerializer(instance=product)
         return Response(serializer.data)
 
