@@ -20,6 +20,8 @@ urlpatterns = [
             path('', views.CommentListView.as_view(), name='comment_list'),
             path('create/', views.CommentCreateView.as_view(), name='comment_create'),
             path('<int:comment_id>/delete/', views.CommentDeleteView.as_view(), name='comment_delete'),
+            path('<int:comment_id>/like/', views.CommentLikeView.as_view(), name='comment_like'),
+            path('<int:comment_id>/dislike/', views.CommentDislikeView.as_view(), name='comment_dislike'),
         ])),
         path('<slug:category_slug>/', views.ProductListView.as_view(), name='customer_category_list'),
         path('product/<slug:product_slug>/', views.ProductDetailView.as_view(), name='customer_detail'),

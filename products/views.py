@@ -176,3 +176,21 @@ class SearchView(APIView):
         context = {'request': request}
         serializer = serializers.ProductListSerializer(instance=results, context=context, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CommentLikeView(APIView):
+    def get(self, request, product_slug, comment_id):
+        product = get_object_or_404(Product, slug=product_slug)
+        comment = get_object_or_404(Comment, product=product, id=comment_id)
+        comment.likes_number += 1
+        comment.save()
+        return Response(status=status.HTTP_200_OK)
+
+
+class CommentDislikeView(APIView):
+    def get(self, request, product_slug, comment_id):
+        product = get_object_or_404(Product, slug=product_slug)
+        comment = get_object_or_404(Comment, product=product, id=comment_id)
+        comment.dislikes_number += 1
+        comment.save()
+        return Response(status=status.HTTP_200_OK)

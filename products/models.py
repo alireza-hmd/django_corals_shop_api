@@ -57,9 +57,8 @@ class Comment(models.Model):
     author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='user_comments')
     body = models.TextField()
     active = models.BooleanField(default=True)
-    # likes_number = models.PositiveIntegerField(default=0)
-    # dislikes_number = models.PositiveIntegerField(default=0)
-    # stars = models.PositiveIntegerField(choices=(1, 2, 3, 4, 5))
+    likes_number = models.PositiveIntegerField(default=0)
+    dislikes_number = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
