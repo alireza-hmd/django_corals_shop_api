@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     # Local
     'accounts.apps.AccountsConfig',
     'products.apps.ProductsConfig',
+    'cart.apps.CartConfig',
 
     # Third Party
     'rest_framework',
@@ -146,3 +147,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 REDIS_HOST = 'redis'
 REDIS_PORT = 6379
 REDIS_DB = 0
+
+
+CART_SESSION_ID = 'cart'

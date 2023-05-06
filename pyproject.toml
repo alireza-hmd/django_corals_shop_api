@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "django_cosmethic_api"
+name = "django_corals_shop_api"
 version = "0.1.0"
 description = ""
 authors = ["Alireza Hamedi <alireza12196@gmail.com>"]

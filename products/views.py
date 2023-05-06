@@ -159,7 +159,7 @@ class CommentListView(APIView):
 class CommentDeleteView(APIView):
     def delete(self, request, product_slug, comment_id):
         product = get_object_or_404(Product, slug=product_slug)
-        comment = get_object_or_404(Comment, product=product, author=request.user)
+        comment = get_object_or_404(Comment, product=product, id=comment_id, author=request.user)
         comment.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
