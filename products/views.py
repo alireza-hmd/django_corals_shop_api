@@ -110,6 +110,15 @@ class ProductListView(APIView):
             brands = request.GET.get('brands')
             brands = brands.split(',')
             products = products.filter(brand__name__in=brands)
+        if request.GET.get('most_viewed'):
+            count = int(request.GET.get('most_viewed'))
+            if count == 0:
+                product_ranking = r.zrevrange('product_ranking', 0, -1)
+            else:
+                product_ranking = r.zrevrange('product_ranking', 0, -1)[:count]
+            product_ranking_ids = [int(id) for id in product_ranking]
+            products = list(Product.objects.filter(id__in=product_ranking_ids))
+            products.sort(key=lambda x: product_ranking_ids.index(x.id))
         context = {'request': request}
         serializer = serializers.ProductListSerializer(instance=products, context=context, many=True)
         return Response(serializer.data)
@@ -119,7 +128,8 @@ class ProductDetailView(APIView):
     @extend_schema(responses=serializers.ProductDetailSerializer)
     def get(self, request, product_slug):
         product = get_object_or_404(Product, slug=product_slug)
-        total_views = r.incr(f'product:{product.id}:views')
+        r.incr(f'product:{product.id}:views')
+        r.zincrby('product_ranking', 1, product.id)
         serializer = serializers.ProductDetailSerializer(instance=product)
         return Response(serializer.data)
 
