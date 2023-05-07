@@ -11,7 +11,33 @@ class OrderInputSerializer(serializers.Serializer):
     city = serializers.CharField(max_length=100)
 
 
-class OrderOutputSerializer(serializers.ModelSerializer):
+class OrderListSerializer(serializers.ModelSerializer):
+    items = serializers.SerializerMethodField('get_items')
+    total_cost = serializers.SerializerMethodField('get_total_cost')
+    url = serializers.SerializerMethodField('get_url')
+    class Meta:
+        model = Order
+        fields = ('id', 'customer', 'paid', 'items', 'total_cost', 'url')
+
+    def get_items(self, order):
+        items = list()
+        for item in order.items.all():
+            items.append({'item': str(item), 'cost': item.get_cost()})
+        return items
+
+    def get_total_cost(self, order):
+        total_cost = 0
+        for item in order.items.all():
+            total_cost += item.get_cost()
+        return str(total_cost)
+
+    def get_url(self, order):
+        request = self.context.get('request')
+        path = order.get_absolute_url()
+        return request.build_absolute_uri(path)
+
+
+class OrderDetailSerializer(serializers.ModelSerializer):
     items = serializers.SerializerMethodField('get_items')
     total_cost = serializers.SerializerMethodField('get_total_cost')
 
@@ -38,22 +64,3 @@ class OrderPaymentSerializer(serializers.Serializer):
     total_price = serializers.DecimalField(max_digits=14, decimal_places=2)
 
 
-class OrderPaidSerializer(serializers.ModelSerializer):
-    items = serializers.SerializerMethodField('get_items')
-    total_cost = serializers.SerializerMethodField('get_total_cost')
-
-    class Meta:
-        model = Order
-        fields = ('id', 'customer', 'paid', 'items', 'total_cost')
-
-    def get_items(self, order):
-        items = list()
-        for item in order.items.all():
-            items.append({'item': str(item), 'cost': item.get_cost()})
-        return items
-
-    def get_total_cost(self, order):
-        total_cost = 0
-        for item in order.items.all():
-            total_cost += item.get_cost()
-        return str(total_cost)

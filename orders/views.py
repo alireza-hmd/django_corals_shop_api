@@ -11,7 +11,7 @@ from . import serializers
 
 
 class OrderCreateView(APIView):
-    @extend_schema(request=serializers.OrderInputSerializer, responses=serializers.OrderOutputSerializer)
+    @extend_schema(request=serializers.OrderInputSerializer, responses=serializers.OrderListSerializer)
     def post(self, request):
         serializer = serializers.OrderInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -22,27 +22,30 @@ class OrderCreateView(APIView):
             product = get_object_or_404(Product, slug=item['product'])
             OrderItem.objects.create(order=order, product=product, price=item['price'], quantity=item['quantity'])
         cart.clear()
-        return Response(serializers.OrderOutputSerializer(instance=order).data, status=status.HTTP_201_CREATED)
+        context = {'request': request}
+        return Response(serializers.OrderListSerializer(instance=order, context=context).data,
+                        status=status.HTTP_201_CREATED)
 
 
 class OrderListView(APIView):
 
-    @extend_schema(responses=serializers.OrderOutputSerializer)
+    @extend_schema(responses=serializers.OrderListSerializer)
     def get(self, request):
         orders = Order.objects.filter(customer=request.user)
         if request.GET.get('paid') == '1':
             orders = orders.filter(paid=True)
         elif request.GET.get('paid') == '0':
             orders = orders.filter(paid=False)
-        serializer = serializers.OrderOutputSerializer(instance=orders, many=True)
+        context = {'request': request}
+        serializer = serializers.OrderListSerializer(instance=orders, context=context, many=True)
         return Response(serializer.data)
 
 
 class OrderDetailView(APIView):
-    @extend_schema(responses=serializers.OrderOutputSerializer)
+    @extend_schema(responses=serializers.OrderDetailSerializer)
     def get(self, request, order_id):
         order = get_object_or_404(Order, customer=request.user, id=order_id)
-        serializer = serializers.OrderOutputSerializer(instance=order)
+        serializer = serializers.OrderDetailSerializer(instance=order)
         return Response(serializer.data)
 
     def delete(self, request, order_id):
@@ -53,7 +56,7 @@ class OrderDetailView(APIView):
 
 
 class OrderPaymentView(APIView):
-    @extend_schema(request=serializers.OrderPaymentSerializer, responses=serializers.OrderPaidSerializers)
+    @extend_schema(request=serializers.OrderPaymentSerializer, responses=serializers.OrderListSerializer)
     def post(self, request):
         serializer = serializers.OrderPaymentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -63,5 +66,6 @@ class OrderPaymentView(APIView):
         if total_price == data['total_price']:
             order.paid = True
             order.save()
-        return Response(serializers.OrderPaidSerializer(instance=order).data)
+        context = {'request': request}
+        return Response(serializers.OrderListSerializer(instance=order, context=context).data)
 

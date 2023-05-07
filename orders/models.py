@@ -1,7 +1,7 @@
 from django.db import models
 from products.models import Product
 from django.contrib.auth import get_user_model
-
+from django.urls import reverse
 
 class Order(models.Model):
     customer = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='user_orders')
@@ -24,6 +24,8 @@ class Order(models.Model):
     def get_total_cost(self):
         return sum(item.get_cost() for item in self.items.all())
 
+    def get_absolute_url(self):
+        return reverse('orders:detail', args=[self.id])
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)

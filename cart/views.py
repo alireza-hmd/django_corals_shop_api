@@ -20,11 +20,16 @@ class CartAddView(APIView):
         return Response(serializers.CartListSerializer(instance=cart.get_item(product)).data)
 
 
-class CartListView(APIView):
-    @extend_schema(responses=serializers.CartListSerializer)
+class CartDetailView(APIView):
+    @extend_schema(responses=serializers.CartDetailSerializer)
     def get(self, request):
         cart = Cart(request)
-        return Response(serializers.CartListSerializer(instance=cart.get_items(), many=True).data)
+        data = {
+            'items': cart.get_items(),
+            'total_price': cart.get_total_price(),
+            'total_price_after_discount': cart.get_total_price_after_discount()
+        }
+        return Response(serializers.CartDetailSerializer(instance=data).data)
 
 
 class CartRemoveView(APIView):
