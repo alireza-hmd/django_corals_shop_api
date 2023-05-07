@@ -1,7 +1,12 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from products.models import Product
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from products.models import Product
+from coupons.models import Coupon
+
+from decimal import Decimal
+
 
 class Order(models.Model):
     customer = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='user_orders')
@@ -14,6 +19,8 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     paid = models.BooleanField(default=False)
+    coupon = models.ForeignKey(Coupon, related_name='orders', null=True, blank=True, on_delete=models.SET_NULL)
+    discount = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
 
     class Meta:
         ordering = ['-created_at']
@@ -21,11 +28,22 @@ class Order(models.Model):
     def __str__(self):
         return f'Order {self.id}'
 
-    def get_total_cost(self):
+    def get_total_cost_before_discount(self):
         return sum(item.get_cost() for item in self.items.all())
+
+    def get_discount(self):
+        total_cost = self.get_total_cost_before_discount()
+        if self.discount:
+            return total_cost * (self.discount / Decimal(100))
+        return Decimal(0)
+
+    def get_total_cost(self):
+        total_cost = self.get_total_cost_before_discount()
+        return total_cost - self.get_discount()
 
     def get_absolute_url(self):
         return reverse('orders:detail', args=[self.id])
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
@@ -38,3 +56,4 @@ class OrderItem(models.Model):
 
     def get_cost(self):
         return self.price * self.quantity
+

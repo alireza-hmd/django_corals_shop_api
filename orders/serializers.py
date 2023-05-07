@@ -13,11 +13,12 @@ class OrderInputSerializer(serializers.Serializer):
 
 class OrderListSerializer(serializers.ModelSerializer):
     items = serializers.SerializerMethodField('get_items')
+    total_cost_before_discount = serializers.SerializerMethodField('get_total_cost_before_discount')
     total_cost = serializers.SerializerMethodField('get_total_cost')
     url = serializers.SerializerMethodField('get_url')
     class Meta:
         model = Order
-        fields = ('id', 'customer', 'paid', 'items', 'total_cost', 'url')
+        fields = ('id', 'customer', 'paid', 'items', 'total_cost_before_discount', 'total_cost', 'url')
 
     def get_items(self, order):
         items = list()
@@ -25,11 +26,11 @@ class OrderListSerializer(serializers.ModelSerializer):
             items.append({'item': str(item), 'cost': item.get_cost()})
         return items
 
+    def get_total_cost_before_discount(self, order):
+        return order.get_total_cost_before_discount()
+
     def get_total_cost(self, order):
-        total_cost = 0
-        for item in order.items.all():
-            total_cost += item.get_cost()
-        return str(total_cost)
+        return order.get_total_cost()
 
     def get_url(self, order):
         request = self.context.get('request')
@@ -39,12 +40,13 @@ class OrderListSerializer(serializers.ModelSerializer):
 
 class OrderDetailSerializer(serializers.ModelSerializer):
     items = serializers.SerializerMethodField('get_items')
+    total_cost_before_discount = serializers.SerializerMethodField('get_total_cost_before_discount')
     total_cost = serializers.SerializerMethodField('get_total_cost')
 
     class Meta:
         model = Order
         fields = ('id', 'customer', 'first_name', 'last_name', 'email', 'address', 'postal_code',
-                  'city', 'created_at', 'paid', 'items', 'total_cost')
+                  'city', 'created_at', 'paid', 'items', 'total_cost_before_discount', 'total_cost')
 
     def get_items(self, order):
         items = list()
@@ -52,15 +54,16 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             items.append({'item': str(item), 'cost': item.get_cost()})
         return items
 
+    def get_total_cost_before_discount(self, order):
+        return order.get_total_cost_before_discount()
+
     def get_total_cost(self, order):
-        total_cost = 0
-        for item in order.items.all():
-            total_cost += item.get_cost()
-        return str(total_cost)
+        return order.get_total_cost()
 
 
 class OrderPaymentSerializer(serializers.Serializer):
     order_id = serializers.IntegerField()
+    total_price_before_discount = serializers.DecimalField(max_digits=14, decimal_places=2)
     total_price = serializers.DecimalField(max_digits=14, decimal_places=2)
 
 

@@ -16,8 +16,12 @@ class OrderCreateView(APIView):
         serializer = serializers.OrderInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        order = Order.objects.create(customer=request.user, **data)
         cart = Cart(request)
+        if cart.coupon:
+            order = Order.objects.create(customer=request.user, coupon=cart.coupon,
+                                         discount=cart.coupon.discount, **data)
+        else:
+            order = Order.objects.create(customer=request.user, **data)
         for item in cart:
             product = get_object_or_404(Product, slug=item['product'])
             OrderItem.objects.create(order=order, product=product, price=item['price'], quantity=item['quantity'])
@@ -62,7 +66,7 @@ class OrderPaymentView(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         order = get_object_or_404(Order, customer=request.user, id=data['order_id'])
-        total_price = sum(item.get_cost() for item in order.items.all())
+        total_price = order.get_total_cost()
         if total_price == data['total_price']:
             order.paid = True
             order.save()
