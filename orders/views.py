@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema
 from django.shortcuts import get_object_or_404
-from decimal import Decimal
+from django.contrib.auth import get_user_model
 from cart.cart import Cart
 from products.models import Product
 from .models import Order, OrderItem
@@ -51,4 +51,17 @@ class OrderDetailView(APIView):
             order.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+class OrderPaymentView(APIView):
+    @extend_schema(request=serializers.OrderPaymentSerializer, responses=serializers.OrderPaidSerializers)
+    def post(self, request):
+        serializer = serializers.OrderPaymentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        order = get_object_or_404(Order, customer=request.user, id=data['order_id'])
+        total_price = sum(item.get_cost() for item in order.items.all())
+        if total_price == data['total_price']:
+            order.paid = True
+            order.save()
+        return Response(serializers.OrderPaidSerializer(instance=order).data)
 

@@ -17,7 +17,7 @@ class OrderOutputSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('customer', 'first_name', 'last_name', 'email', 'address', 'postal_code',
+        fields = ('id', 'customer', 'first_name', 'last_name', 'email', 'address', 'postal_code',
                   'city', 'created_at', 'paid', 'items', 'total_cost')
 
     def get_items(self, order):
@@ -33,3 +33,27 @@ class OrderOutputSerializer(serializers.ModelSerializer):
         return str(total_cost)
 
 
+class OrderPaymentSerializer(serializers.Serializer):
+    order_id = serializers.IntegerField()
+    total_price = serializers.DecimalField(max_digits=14, decimal_places=2)
+
+
+class OrderPaidSerializer(serializers.ModelSerializer):
+    items = serializers.SerializerMethodField('get_items')
+    total_cost = serializers.SerializerMethodField('get_total_cost')
+
+    class Meta:
+        model = Order
+        fields = ('id', 'customer', 'paid', 'items', 'total_cost')
+
+    def get_items(self, order):
+        items = list()
+        for item in order.items.all():
+            items.append({'item': str(item), 'cost': item.get_cost()})
+        return items
+
+    def get_total_cost(self, order):
+        total_cost = 0
+        for item in order.items.all():
+            total_cost += item.get_cost()
+        return str(total_cost)
