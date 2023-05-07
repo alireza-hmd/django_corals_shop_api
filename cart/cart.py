@@ -42,14 +42,24 @@ class Cart:
         product_ids = self.cart.keys()
 
         products = Product.objects.filter(id__in=product_ids)
-        cart = self.cart.copy()
         for product in products:
-            cart[str(product.id)]['product'] = str(product)
+            self.cart[str(product.id)]['product'] = str(product)
 
-        for item in cart.values():
+        for item in self.cart.values():
             item['total_price'] = str(Decimal(item['price']) * item['quantity'])
 
-        return list(cart.values())
+        return list(self.cart.values())
+
+    def __iter__(self):
+        product_ids = self.cart.keys()
+        products = Product.objects.filter(id__in=product_ids)
+        cart = self.cart.copy()
+        for product in products:
+            cart[str(product.id)]['product'] = product
+        for item in cart.values():
+            item['price'] = Decimal(item['price'])
+            item['total_price'] = item['price'] * item['quantity']
+            yield item
 
     def __len__(self):
         return sum(item['quantity'] for item in self.cart.values())
