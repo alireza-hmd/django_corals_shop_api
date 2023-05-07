@@ -8,7 +8,7 @@ from cart.cart import Cart
 from products.models import Product
 from .models import Order, OrderItem
 from . import serializers
-
+from products.recommender import Recommender
 
 class OrderCreateView(APIView):
     @extend_schema(request=serializers.OrderInputSerializer, responses=serializers.OrderListSerializer)
@@ -64,12 +64,12 @@ class OrderPaymentView(APIView):
     def post(self, request):
         serializer = serializers.OrderPaymentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
-        order = get_object_or_404(Order, customer=request.user, id=data['order_id'])
-        total_price = order.get_total_cost()
-        if total_price == data['total_price']:
-            order.paid = True
-            order.save()
-        context = {'request': request}
-        return Response(serializers.OrderListSerializer(instance=order, context=context).data)
+        order_id = serializer.validated_data['order_id']
+        order = get_object_or_404(Order, customer=request.user, id=order_id)
+        order.paid = True
+        order.save()
+        products = [item.product for item in order.items.all()]
+        r = Recommender()
+        r.products_bought(products)
+        return Response()
 

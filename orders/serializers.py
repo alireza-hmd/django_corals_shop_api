@@ -63,7 +63,5 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
 class OrderPaymentSerializer(serializers.Serializer):
     order_id = serializers.IntegerField()
-    total_price_before_discount = serializers.DecimalField(max_digits=14, decimal_places=2)
-    total_price = serializers.DecimalField(max_digits=14, decimal_places=2)
 
 

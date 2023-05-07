@@ -130,7 +130,8 @@ class ProductDetailView(APIView):
         product = get_object_or_404(Product, slug=product_slug)
         r.incr(f'product:{product.id}:views')
         r.zincrby('product_ranking', 1, product.id)
-        serializer = serializers.ProductDetailSerializer(instance=product)
+        context = {'request': request}
+        serializer = serializers.ProductDetailSerializer(instance=product, context=context)
         return Response(serializer.data)
 
 

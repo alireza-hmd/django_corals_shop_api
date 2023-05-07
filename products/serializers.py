@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.conf import settings
 import redis
 from .models import Product, Brand, Category, Image, Comment
+from .recommender import Recommender
 
 r = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB)
 
@@ -28,15 +29,22 @@ class VendorProductListSerializer(serializers.ModelSerializer):
 
 class ProductDetailSerializer(serializers.ModelSerializer):
     views = serializers.SerializerMethodField('get_views')
+    recommended_products = serializers.SerializerMethodField('get_recommended_products')
 
     class Meta:
         model = Product
         fields = ('id', 'title', 'slug', 'price', 'volume', 'description', 'available',
                   'created_at', 'updated_at', 'vendor', 'category', 'brand', 'product_images',
-                  'product_comments', 'views')
+                  'product_comments', 'recommended_products', 'views')
 
     def get_views(self, product):
         return r.get(f'product:{product.id}:views')
+
+    def get_recommended_products(self, product):
+        r = Recommender()
+        recommended_products = r.suggest_products_for([product], 8)
+
+        return ProductListSerializer(instance=recommended_products, context=self.context, many=True).data
 
 
 class ImageUploadSerializer(serializers.Serializer):
